@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set, Set, Tuple
 
 def calculate_urgency_score(due_date: Optional[str], current_date: date = None) -> float:
     if current_date is None:
@@ -156,4 +156,146 @@ def get_score_explanation(
         parts.append(f"blocks {blocked} task(s)")
     
     return ", ".join(parts) if parts else "standard priority"
+
+def detect_circular_dependencies(all_tasks: List[Dict]) -> List[List[str]]:
+    graph = {}
+    task_ids = {}
+    
+    for idx, task in enumerate(all_tasks):
+        task_id = str(task.get('id', idx))
+        task_ids[task_id] = task
+        graph[task_id] = []
+        deps = task.get('dependencies', [])
+        for dep in deps:
+            dep_str = str(dep)
+            graph[task_id].append(dep_str)
+    
+    def dfs(node: str, visited: Set[str], rec_stack: Set[str], path: List[str]) -> Optional[List[str]]:
+        visited.add(node)
+        rec_stack.add(node)
+        path.append(node)
+        
+        for neighbor in graph.get(node, []):
+            if neighbor not in visited:
+                cycle = dfs(neighbor, visited, rec_stack, path)
+                if cycle:
+                    return cycle
+            elif neighbor in rec_stack:
+                cycle_start = path.index(neighbor)
+                return path[cycle_start:] + [neighbor]
+        
+        rec_stack.remove(node)
+        path.pop()
+        return None
+    
+    cycles = []
+    visited = set()
+    
+    for task_id in graph:
+        if task_id not in visited:
+            cycle = dfs(task_id, visited, set(), [])
+            if cycle:
+                cycles.append(cycle)
+    
+    return cycles
+
+def get_strategy_weights(strategy: str) -> Dict[str, float]:
+    strategies = {
+        'fastest_wins': {
+            'urgency': 0.20,
+            'importance': 0.20,
+            'effort': 0.50,
+            'dependencies': 0.10
+        },
+        'high_impact': {
+            'urgency': 0.20,
+            'importance': 0.60,
+            'effort': 0.10,
+            'dependencies': 0.10
+        },
+        'deadline_driven': {
+            'urgency': 0.70,
+            'importance': 0.15,
+            'effort': 0.10,
+            'dependencies': 0.05
+        },
+        'smart_balance': {
+            'urgency': 0.35,
+            'importance': 0.30,
+            'effort': 0.20,
+            'dependencies': 0.15
+        }
+    }
+    return strategies.get(strategy, strategies['smart_balance'])
+
+def detect_circular_dependencies(all_tasks: List[Dict]) -> List[List[str]]:
+    graph = {}
+    task_ids = {}
+    
+    for idx, task in enumerate(all_tasks):
+        task_id = str(task.get('id', idx))
+        task_ids[task_id] = task
+        graph[task_id] = []
+        deps = task.get('dependencies', [])
+        for dep in deps:
+            dep_str = str(dep)
+            graph[task_id].append(dep_str)
+    
+    def dfs(node: str, visited: Set[str], rec_stack: Set[str], path: List[str]) -> Optional[List[str]]:
+        visited.add(node)
+        rec_stack.add(node)
+        path.append(node)
+        
+        for neighbor in graph.get(node, []):
+            if neighbor not in visited:
+                cycle = dfs(neighbor, visited, rec_stack, path)
+                if cycle:
+                    return cycle
+            elif neighbor in rec_stack:
+                cycle_start = path.index(neighbor)
+                return path[cycle_start:] + [neighbor]
+        
+        rec_stack.remove(node)
+        path.pop()
+        return None
+    
+    cycles = []
+    visited = set()
+    
+    for task_id in graph:
+        if task_id not in visited:
+            cycle = dfs(task_id, visited, set(), [])
+            if cycle:
+                cycles.append(cycle)
+    
+    return cycles
+
+def get_strategy_weights(strategy: str) -> Dict[str, float]:
+    strategies = {
+        'fastest_wins': {
+            'urgency': 0.20,
+            'importance': 0.20,
+            'effort': 0.50,
+            'dependencies': 0.10
+        },
+        'high_impact': {
+            'urgency': 0.20,
+            'importance': 0.60,
+            'effort': 0.10,
+            'dependencies': 0.10
+        },
+        'deadline_driven': {
+            'urgency': 0.70,
+            'importance': 0.15,
+            'effort': 0.10,
+            'dependencies': 0.05
+        },
+        'smart_balance': {
+            'urgency': 0.35,
+            'importance': 0.30,
+            'effort': 0.20,
+            'dependencies': 0.15
+        }
+    }
+    return strategies.get(strategy, strategies['smart_balance'])
 

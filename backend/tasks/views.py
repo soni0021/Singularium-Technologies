@@ -166,3 +166,57 @@ def analyze_tasks(request):
         'strategy': strategy,
         'total_tasks': len(analyzed_tasks)
     }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def suggest_tasks(request):
+    tasks = Task.objects.all()
+    if not tasks.exists():
+        return Response({
+            'suggestions': [],
+            'message': 'No tasks available for suggestions'
+        }, status=status.HTTP_200_OK)
+    
+    tasks_data = []
+    for task in tasks:
+        task_dict = {
+            'id': str(task.id),
+            'title': task.title,
+            'due_date': task.due_date.isoformat() if task.due_date else None,
+            'estimated_hours': task.estimated_hours,
+            'importance': task.importance,
+            'dependencies': task.dependencies
+        }
+        tasks_data.append(task_dict)
+    
+    for idx, task in enumerate(tasks_data):
+        if not task.get('id'):
+            task['id'] = str(idx + 1)
+    
+    strategy = request.query_params.get('strategy', 'smart_balance')
+    weights = get_strategy_weights(strategy)
+    
+    analyzed_tasks = []
+    for task in tasks_data:
+        priority_score = calculate_priority_score(task, tasks_data, weights)
+        explanation = get_score_explanation(task, tasks_data, weights)
+        
+        task_result = {
+            'id': task.get('id'),
+            'title': task.get('title'),
+            'due_date': task.get('due_date'),
+            'estimated_hours': task.get('estimated_hours', 0),
+            'importance': task.get('importance', 5),
+            'dependencies': task.get('dependencies', []),
+            'priority_score': priority_score,
+            'explanation': explanation
+        }
+        analyzed_tasks.append(task_result)
+    
+    analyzed_tasks.sort(key=lambda x: x['priority_score'], reverse=True)
+    top_3 = analyzed_tasks[:3]
+    
+    return Response({
+        'suggestions': top_3,
+        'strategy': strategy,
+        'total_available': len(analyzed_tasks)
+    }, status=status.HTTP_200_OK)
