@@ -173,7 +173,7 @@ async function analyzeTasks() {
     }));
 
     try {
-        const response = await fetch(`${API_BASE_URL}/analyze/?strategy=${strategy}`, {
+        const response = await fetch(`${API_BASE_URL}/tasks/analyze/?strategy=${strategy}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
