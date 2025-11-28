@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-import json
 
 class Task(models.Model):
     title = models.CharField(max_length=200)

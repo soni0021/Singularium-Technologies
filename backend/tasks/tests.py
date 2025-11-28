@@ -309,7 +309,7 @@ class APITest(TestCase):
                 'dependencies': []
             }
         ]
-        response = self.client.post('/api/analyze/', tasks_data, format='json')
+        response = self.client.post('/api/tasks/analyze/', tasks_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('tasks', response.data)
         self.assertIn('strategy', response.data)
@@ -326,7 +326,7 @@ class APITest(TestCase):
                 'dependencies': []
             }
         ]
-        response = self.client.post('/api/analyze/?strategy=fastest_wins', 
+        response = self.client.post('/api/tasks/analyze/?strategy=fastest_wins', 
                                    tasks_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['strategy'], 'fastest_wins')
@@ -344,16 +344,16 @@ class APITest(TestCase):
                 'dependencies': ['1']
             }
         ]
-        response = self.client.post('/api/analyze/', tasks_data, format='json')
+        response = self.client.post('/api/tasks/analyze/', tasks_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('circular', response.data['error'].lower())
 
     def test_analyze_tasks_empty_list(self):
-        response = self.client.post('/api/analyze/', [], format='json')
+        response = self.client.post('/api/tasks/analyze/', [], format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_analyze_tasks_invalid_data(self):
-        response = self.client.post('/api/analyze/', {'not': 'a list'}, format='json')
+        response = self.client.post('/api/tasks/analyze/', {'not': 'a list'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_task_invalid_importance(self):

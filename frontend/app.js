@@ -35,7 +35,6 @@ async function loadTasks() {
         }
     } catch (error) {
         showToast('Error connecting to server', 'error');
-        console.error('Error loading tasks:', error);
     }
 }
 
@@ -123,7 +122,6 @@ async function handleTaskSubmit(e) {
         }
     } catch (error) {
         showToast('Error saving task', 'error');
-        console.error('Error saving task:', error);
     }
 }
 
@@ -152,7 +150,6 @@ async function deleteTask(id) {
         }
     } catch (error) {
         showToast('Error deleting task', 'error');
-        console.error('Error deleting task:', error);
     }
 }
 
@@ -188,13 +185,9 @@ async function analyzeTasks() {
         } else {
             const error = await response.json();
             showToast(error.error || 'Analysis failed', 'error');
-            if (error.cycles) {
-                console.error('Circular dependencies:', error.cycles);
-            }
         }
     } catch (error) {
         showToast('Error analyzing tasks', 'error');
-        console.error('Error analyzing tasks:', error);
     }
 }
 
